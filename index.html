@@ -208,16 +208,26 @@
     }
 
     function generatePDF() {
-      const element = document.getElementById("invoice");
-      const opt = {
-        margin: 0.2,
-        filename: 'invoice.pdf',
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
-      };
-      html2pdf().set(opt).from(element).save();
+      const element = document.getElementById("invoice");
+      const buttons = document.querySelector(".buttons");
+
+      // Hide buttons before generating PDF
+      buttons.style.display = "none";
+
+      const opt = {
+      margin: 0.2,
+      filename: 'invoice.pdf',
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+      };
+
+      html2pdf().set(opt).from(element).save().then(() => {
+      // Show buttons again after PDF is generated
+      buttons.style.display = "block";
+      });
     }
+
 
     // Set today's date
     document.getElementById("invoiceDate").valueAsDate = new Date();
