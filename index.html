@@ -1,194 +1,229 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Invoice Generator</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #fff;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      justify-content: center;
-    }
-    #invoice {
-      width: 800px;
-      padding: 20px;
-      background-color: white;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-      box-sizing: border-box;
-    }
-    h2 {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-    .info, .totals {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-    .info label, .info input {
-      margin: 5px;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-bottom: 20px;
-      table-layout: fixed;
-    }
-    th, td {
-      border: 1px solid #999;
-      padding: 8px;
-      text-align: center;
-      word-wrap: break-word;
-    }
-    th {
-      background-color: #f2f2f2;
-    }
-    input[type="text"], input[type="number"] {
-      width: 100%;
-      border: none;
-      outline: none;
-      resize: none;
-      font-size: 14px;
-      overflow-wrap: break-word;
-      white-space: pre-wrap;
-    }
-    .buttons {
-      text-align: center;
-      margin-bottom: 30px;
-    }
-    .buttons button {
-      display: inline-block;
-      margin: 4px;
-      padding: 8px 12px;
-      font-size: 14px;
-      cursor: pointer;
-      border: 1px solid #333;
-      background-color: #eee;
-      border-radius: 5px;
-    }
-    .qty-input {
-      width: 60px !important;
-    }
-    .no-print {
-      display: block;
-    }
-  </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Invoice Generator</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: #f9f9f9;
+      padding: 20px;
+    }
+
+    .container {
+      background: #fff;
+      padding: 20px;
+      max-width: 800px;
+      margin: 0 auto;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+
+    h1 {
+      margin-bottom: 10px;
+    }
+
+    h3 {
+      margin-top: 20px;
+    }
+
+    .client-details {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin: 20px 0;
+      flex-wrap: wrap;
+    }
+
+    .client-details input,
+    .client-details select {
+      padding: 8px;
+      width: 200px;
+      resize: both;
+      white-space: normal;
+      word-wrap: break-word;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 10px 0 20px 0;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: center;
+    }
+
+    input[type="text"], input[type="number"] {
+      width: 100%;
+      padding: 6px;
+      resize: both;
+      white-space: normal;
+      word-wrap: break-word;
+    }
+
+    .qty-input {
+      width: 60px;
+      padding: 6px;
+      resize: both;
+      white-space: normal;
+      word-wrap: break-word;
+    }
+
+    .buttons {
+      margin: 10px 0;
+    }
+
+    .buttons button {
+      padding: 6px 14px;
+      margin: 0 5px;
+      font-weight: bold;
+      border: none;
+      border-radius: 4px;
+      color: white;
+      background-color: #007bff;
+      cursor: pointer;
+    }
+
+    .buttons button:active {
+      transform: scale(0.98);
+    }
+
+    .total {
+      font-weight: bold;
+      margin-top: 10px;
+    }
+
+    @media screen and (max-width: 768px) {
+      .client-details {
+        flex-direction: column;
+        align-items: center;
+      }
+    }
+  </style>
 </head>
 <body>
-  <div id="invoice">
-    <h2>INVOICE</h2>
+  <div class="container" id="invoice">
+    <h1>Anand Web Solutions</h1>
+    <h3>Customer Details</h3>
 
-    <div class="info">
-      <label for="clientName">Client Name:</label>
-      <input type="text" id="clientName" placeholder="Enter client name">
+    <div class="client-details">
+      <div>
+        <input type="text" placeholder="Enter name" id="clientName" />
+      </div>
+      <div>
+        <input type="text" placeholder="Enter contact" id="clientContact" />
+      </div>
+      <div>
+        <input type="date" id="invoiceDate" />
+      </div>
+    </div>
 
-      <label for="clientContact">Phone or Email:</label>
-      <input type="text" id="clientContact" placeholder="Enter phone or email">
+    <h3>Invoice Items</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Description</th>
+          <th>Qty</th>
+          <th>Price</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody id="items">
+        <tr>
+          <td><input type="text" placeholder="Item name" /></td>
+          <td><input type="number" class="qty-input" value="1" oninput="updateTotal(this)" /></td>
+          <td><input type="number" value="0" oninput="updateTotal(this)" /></td>
+          <td class="row-total">₹0.00</td>
+        </tr>
+      </tbody>
+    </table>
 
-      <label for="invoiceDate">Date:</label>
-      <input type="date" id="invoiceDate">
-    </div>
+    <div class="buttons" id="no-print">
+      <button onclick="addItem()">+ Add Item</button>
+      <button onclick="calculateGrandTotal()">✔️ DONE</button>
+      <button onclick="generatePDF()">🖨️ PRINT INVOICE</button>
+      <button onclick="resetForm()">🔄 Reset</button>
+    </div>
 
-    <table id="invoiceTable">
-      <thead>
-        <tr>
-          <th>Description</th>
-          <th>Qty</th>
-          <th>Price (₹)</th>
-          <th>Total (₹)</th>
-        </tr>
-      </thead>
-      <tbody id="invoiceBody">
-        <tr>
-          <td contenteditable="true"></td>
-          <td><input type="number" class="qty-input" onchange="calculateRowTotal(this)"></td>
-          <td><input type="number" onchange="calculateRowTotal(this)"></td>
-          <td class="row-total">₹0.00</td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="total" id="grandTotal">Grand Total: ₹0.00</div>
+  </div>
 
-    <div class="totals">
-      <strong>Total: ₹<span id="totalAmount">0.00</span></strong><br>
-      <strong>Grand Total: ₹<span id="grandTotal">0.00</span></strong>
-    </div>
+  <script>
+    function updateTotal(el) {
+      const row = el.closest("tr");
+      const qty = parseFloat(row.cells[1].querySelector("input").value) || 0;
+      const price = parseFloat(row.cells[2].querySelector("input").value) || 0;
+      const total = qty * price;
+      row.cells[3].textContent = "₹" + total.toLocaleString("en-IN", { minimumFractionDigits: 2 });
+    }
 
-    <div class="buttons no-print">
-      <button onclick="addItem()">+ Add Item</button>
-      <button onclick="calculateGrandTotal()">✔️ DONE</button>
-      <button onclick="generatePDF()">🖨️ DOWNLOAD</button>
-      <button onclick="resetForm()">🔄 Reset</button>
-    </div>
-  </div>
+    function calculateGrandTotal() {
+      let grandTotal = 0;
+      const rows = document.querySelectorAll("#items tr");
+      rows.forEach(row => {
+        const qty = parseFloat(row.cells[1].querySelector("input").value) || 0;
+        const price = parseFloat(row.cells[2].querySelector("input").value) || 0;
+        const total = qty * price;
+        grandTotal += total;
+        row.cells[3].textContent = "₹" + total.toLocaleString("en-IN", { minimumFractionDigits: 2 });
+      });
+      document.getElementById("grandTotal").textContent =
+        "Grand Total: ₹" + grandTotal.toLocaleString("en-IN", { minimumFractionDigits: 2 });
+    }
 
-  <script>
-    // Set today's date
-    document.getElementById("invoiceDate").valueAsDate = new Date();
+    function addItem() {
+      const tbody = document.getElementById("items");
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td><input type="text" placeholder="Item name" /></td>
+        <td><input type="number" class="qty-input" value="1" oninput="updateTotal(this)" /></td>
+        <td><input type="number" value="0" oninput="updateTotal(this)" /></td>
+        <td class="row-total">₹0.00</td>
+      `;
+      tbody.appendChild(row);
+    }
 
-    function addItem() {
-      const tableBody = document.getElementById("invoiceBody");
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td contenteditable="true"></td>
-        <td><input type="number" class="qty-input" onchange="calculateRowTotal(this)"></td>
-        <td><input type="number" onchange="calculateRowTotal(this)"></td>
-        <td class="row-total">₹0.00</td>
-      `;
-      tableBody.appendChild(row);
-    }
+    function resetForm() {
+      document.getElementById("clientName").value = "";
+      document.getElementById("clientContact").value = "";
+      document.getElementById("invoiceDate").valueAsDate = new Date();
+      document.getElementById("items").innerHTML = `
+        <tr>
+          <td><input type="text" placeholder="Item name" /></td>
+          <td><input type="number" class="qty-input" value="1" oninput="updateTotal(this)" /></td>
+          <td><input type="number" value="0" oninput="updateTotal(this)" /></td>
+          <td class="row-total">₹0.00</td>
+        </tr>
+      `;
+      document.getElementById("grandTotal").textContent = "Grand Total: ₹0.00";
+    }
 
-    function calculateRowTotal(input) {
-      const row = input.closest("tr");
-      const qty = parseFloat(row.cells[1].querySelector("input").value) || 0;
-      const price = parseFloat(row.cells[2].querySelector("input").value) || 0;
-      const total = qty * price;
-      row.cells[3].innerText = `₹${total.toFixed(2)}`;
-      calculateGrandTotal();
-    }
+    function generatePDF() {
+      const element = document.getElementById("invoice");
+      const opt = {
+        margin: 0.2,
+        filename: 'invoice.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: {
+          scale: 2,
+          ignoreElements: (el) => el.id === 'no-print'
+        },
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+      };
+      html2pdf().set(opt).from(element).save();
+    }
 
-    function calculateGrandTotal() {
-      const rows = document.querySelectorAll("#invoiceBody tr");
-      let total = 0;
-      rows.forEach(row => {
-        const qty = parseFloat(row.cells[1].querySelector("input").value) || 0;
-        const price = parseFloat(row.cells[2].querySelector("input").value) || 0;
-        total += qty * price;
-      });
-      document.getElementById("totalAmount").innerText = total.toFixed(2);
-      document.getElementById("grandTotal").innerText = total.toFixed(2);
-    }
-
-    function generatePDF() {
-      const element = document.getElementById("invoice");
-      const opt = {
-        margin: 0.4,
-        filename: 'invoice.pdf',
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: {
-          scale: 2,
-          ignoreElements: (el) => el.classList?.contains('no-print')
-        },
-        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
-      };
-      html2pdf().set(opt).from(element).save();
-    }
-
-    function resetForm() {
-      document.getElementById("clientName").value = "";
-      document.getElementById("clientContact").value = "";
-      document.getElementById("invoiceDate").valueAsDate = new Date();
-      document.getElementById("invoiceBody").innerHTML = `
-        <tr>
-          <td contenteditable="true"></td>
-          <td><input type="number" class="qty-input" onchange="calculateRowTotal(this)"></td>
-          <td><input type="number" onchange="calculateRowTotal(this)"></td>
-          <td class="row-total">₹0.00</td>
-        </tr>`;
-      calculateGrandTotal();
-    }
-  </script>
+    // Set today's date
+    document.getElementById("invoiceDate").valueAsDate = new Date();
+  </script>
 </body>
 </html>
